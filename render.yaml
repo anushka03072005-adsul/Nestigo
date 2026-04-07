@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: nestigo
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node app.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ATLAS_URL
+        scope: build,runtime
+      - key: SESSION_SECRET
+        scope: runtime
+      - key: CLOUD_NAME
+        scope: runtime
+      - key: CLOUD_API_KEY
+        scope: runtime
+      - key: CLOUD_API_SECRET
+        scope: runtime
+      - key: GEOCODING_API_KEY
+        scope: runtime
