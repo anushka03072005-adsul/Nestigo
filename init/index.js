@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const initilizedata = require('./data.js');
 const Listing = require('../models/listing.js');
+require('dotenv').config();
 
 // Use Atlas URL if available, otherwise local
 const MONGO_URL = process.env.ATLAS_URL || process.env.MONGO_URL || "mongodb://localhost:27017/Nestigo";
