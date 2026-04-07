@@ -1,0 +1,146 @@
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    
+    flex: 1;
+
+}
+        
+
+        
+.navbar{
+    height: 5rem;
+    background-color: white;
+}
+
+.add-btn {
+    background-color:brown !important;
+
+}
+
+.edit-btn {
+    background-color:brown !important;
+}
+
+.fa-plane-departure{
+    color:brown;
+    font-size: 2rem;
+}
+
+.nav-link{
+    color: #151515 !important;
+}
+
+.f-info-links a {
+    color-decoration: none;
+    color: 222222;
+}
+
+.f-info-links a:hover {
+    text-decoration: underline;
+    
+}
+
+.f-info-links {
+    width: 100%;
+    margin-right: 5rem;
+    text-align: center;
+
+}
+
+.f-info-socials {
+    width: 100%;
+    font-size: 1.5rem;
+    margin-right: 1.2rem;
+
+}
+
+.f-info-socials i {
+    margin-right: 1rem;
+    font-size: 1.5rem;
+}
+
+.f-info {
+    text-align: center;
+    height: 8rem;
+    background-color: aliceblue;
+    display:flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: space-evenly;
+
+}
+.listing-card {
+    border: none !important;
+    margin-bottom: 2rem;
+}
+
+.card-img-top {
+    border-radius: 1rem !important;
+    width: 100% !important;
+    object-fit: cover !important;
+}
+
+.card-body {
+    padding: 1rem !important;
+}
+
+.card-text p {
+    font-weight: 400;
+}
+
+/* FILTER BAR */
+#filters {
+    background-color: #ffffff !important;
+    padding: 15px 0 !important;
+}
+
+.filters-bar {
+    border-bottom: 1px solid #ddd !important;
+    padding-bottom: 10px !important;
+}
+
+.filter-item {
+    cursor: pointer !important;
+    color: #555 !important;
+    transition: all 0.3s ease !important;
+    padding: 10px !important;
+}
+
+.filter-item i {
+    font-size: 22px !important;
+    margin-bottom: 5px !important;
+    display: block !important;
+}
+
+.filter-item p {
+    font-size: 14px !important;
+    margin: 0 !important;
+}
+
+.filter-item:hover {
+    color: #ff385c !important;  /* Airbnb pink */
+    transform: scale(1.1) !important;
+}
+
+/* LISTING CARD IMPROVEMENT */
+.listing-card {
+    border-radius: 15px !important;
+    overflow: hidden !important;
+    transition: transform 0.3s ease !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+}
+
+.listing-card:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+}
+a.filter-item {
+    text-decoration: none !important;
+}

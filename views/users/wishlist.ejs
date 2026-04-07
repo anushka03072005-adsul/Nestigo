@@ -1,0 +1,68 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mt-4">
+
+<h3 class="text-center mb-4">Your Wishlist ❤️</h3>
+
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+
+<% if(listings.length === 0){ %>
+
+<p class="text-center text-muted">No listings in your wishlist yet.</p>
+
+<% } %>
+
+<% listings.forEach(listing => { %>
+
+<div class="col">
+
+<div class="card shadow-sm h-100">
+
+<img 
+src="<%= listing.image?.url %>" 
+class="card-img-top"
+style="height:250px; object-fit:cover;"
+alt="listing image"
+>
+
+<div class="card-body">
+
+<h5 class="card-title">
+<b><%= listing.title %></b>
+</h5>
+
+<p class="card-text mb-1">
+₹ <%= listing.price ? listing.price.toLocaleString("en-IN") : "0" %> / night
+</p>
+
+<p class="text-muted">
+<%= listing.location %>, <%= listing.country %>
+</p>
+
+
+<!-- VIEW LISTING -->
+<a href="/listings/<%= listing._id %>" class="btn btn-dark btn-sm">
+View Listing
+</a>
+
+
+<!-- REMOVE FROM WISHLIST -->
+<form action="/wishlist/<%= listing._id %>" method="POST" class="mt-2">
+
+<button class="btn btn-outline-danger btn-sm">
+<i class="fa-solid fa-heart-crack"></i> Remove
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<% }) %>
+
+</div>
+
+</div>

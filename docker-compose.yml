@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: nestigo-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  nestigo:
+    build: .
+    container_name: nestigo-app
+    ports:
+      - "5000:8080"
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/Nestigo
+    restart: always
+
+volumes:
+  mongo-data:

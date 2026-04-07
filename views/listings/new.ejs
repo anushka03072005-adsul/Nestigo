@@ -1,0 +1,61 @@
+<% layout("layouts/boilerplate") %>
+
+<h2 class="mb-4">Create a New Listing</h2>
+
+<form method="POST" action="/listings" class="needs-validation" novalidate enctype="multipart/form-data">
+
+<div class="mb-3">
+  <label class="form-label">Category</label>
+  <select name="listing[category]" class="form-select" required>
+    <option value="">Select Category</option>
+    <option value="trending">Trending</option>
+    <option value="iconic-cities">Iconic Cities</option>
+    <option value="mountains">Mountains</option>
+    <option value="castles">Castles</option>
+    <option value="amazing-pools">Amazing Pools</option>
+    <option value="camping">Camping</option>
+    <option value="farms">Farms</option>
+    <option value="arctic">Arctic</option>
+  </select>
+</div>
+<!-- TITLE -->
+<div class="mb-3">
+    <label class="form-label">Title</label>
+    <input type="text" name="listing[title]" class="form-control" required>
+</div>
+
+<!-- DESCRIPTION -->
+<div class="mb-3">
+    <label class="form-label">Description</label>
+    <textarea name="listing[description]" class="form-control" required></textarea>
+</div>
+
+<!-- IMAGE UPLOAD -->
+<div class="mb-3">
+    <label class="form-label">Upload Image</label>
+    <input type="file" name="listingImage" class="form-control" accept="image/*" required>
+</div>
+
+<!-- PRICE + COUNTRY -->
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Price</label>
+        <input type="number" name="listing[price]" class="form-control" required>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Country</label>
+        <input type="text" name="listing[country]" class="form-control" required>
+    </div>
+</div>
+
+<!-- LOCATION -->
+<div class="mb-4">
+    <label class="form-label">Location</label>
+    <input type="text" name="listing[location]" class="form-control" required>
+</div>
+
+<button class="btn btn-dark px-4">Add</button>
+
+
+</form>

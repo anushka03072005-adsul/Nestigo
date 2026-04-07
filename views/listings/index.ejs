@@ -1,0 +1,216 @@
+<% layout("layouts/boilerplate") %>
+
+<!-- FILTERS -->
+<div id="filters" class="container mt-4">
+
+  <div class="d-flex flex-wrap justify-content-center gap-4 filters-bar">
+
+    <a href="/listings?category=trending" 
+       class="filter-item text-center <%= selectedCategory === 'trending' ? 'active' : '' %>">
+      <i class="fa-solid fa-fire"></i>
+      <p>Trending</p>
+    </a>
+
+    <a href="/listings?category=iconic-cities"
+       class="filter-item text-center <%= selectedCategory === 'iconic-cities' ? 'active' : '' %>">
+      <i class="fa-solid fa-city"></i>
+      <p>Iconic Cities</p>
+    </a>
+
+    <a href="/listings?category=mountains"
+       class="filter-item text-center <%= selectedCategory === 'mountains' ? 'active' : '' %>">
+      <i class="fa-solid fa-mountain"></i>
+      <p>Mountains</p>
+    </a>
+
+    <a href="/listings?category=castles"
+       class="filter-item text-center <%= selectedCategory === 'castles' ? 'active' : '' %>">
+      <i class="fa-solid fa-chess-rook"></i>
+      <p>Castles</p>
+    </a>
+
+    <a href="/listings?category=amazing-pools"
+       class="filter-item text-center <%= selectedCategory === 'amazing-pools' ? 'active' : '' %>">
+      <i class="fa-solid fa-water-ladder"></i>
+      <p>Amazing Pools</p>
+    </a>
+
+    <a href="/listings?category=camping"
+       class="filter-item text-center <%= selectedCategory === 'camping' ? 'active' : '' %>">
+      <i class="fa-solid fa-campground"></i>
+      <p>Camping</p>
+    </a>
+
+    <a href="/listings?category=farms"
+       class="filter-item text-center <%= selectedCategory === 'farms' ? 'active' : '' %>">
+      <i class="fa-solid fa-tractor"></i>
+      <p>Farms</p>
+    </a>
+
+    <a href="/listings?category=arctic"
+       class="filter-item text-center <%= selectedCategory === 'arctic' ? 'active' : '' %>">
+      <i class="fa-solid fa-igloo"></i>
+      <p>Arctic</p>
+    </a>
+
+  </div>
+</div>
+
+<hr class="my-4">
+
+<% if(recommendedListings && recommendedListings.length > 0){ %>
+
+<div class="container mt-5">
+
+<h4 class="mb-3">Recommended for you</h4>
+
+<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+
+<% for(let listing of recommendedListings){ %>
+
+<div class="col">
+
+<a href="/listings/<%= listing._id %>" style="text-decoration:none;color:inherit;">
+
+<div class="card listing-card">
+
+<img
+src="<%= listing.image?.url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e' %>"
+class="card-img-top"
+style="height:300px; object-fit:cover;"
+alt="listing_image"
+/>
+
+<div class="card-body">
+
+<h5><%= listing.title %></h5>
+
+<p>
+₹ <%= listing.price.toLocaleString("en-IN") %> / night
+</p>
+
+<span class="badge bg-danger">
+<%= listing.category %>
+</span>
+
+</div>
+
+</div>
+
+</a>
+
+</div>
+
+<% } %>
+
+</div>
+
+</div>
+
+<hr>
+
+<% } %>
+
+<% if(trendingListings && trendingListings.length){ %>
+
+<h3 class="mt-4 mb-3">🔥 Trending Now</h3>
+
+<div class="row">
+
+<% trendingListings.forEach(listing => { %>
+
+<div class="col-md-3 mb-3">
+
+<a href="/listings/<%= listing._id %>" style="text-decoration:none; color:inherit;">
+
+<div class="card shadow-sm">
+
+<img
+src="<%= listing.image?.url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e' %>"
+class="card-img-top"
+style="height:300px; object-fit:cover;"
+alt="listing_image"
+/>
+
+<div class="card-body">
+
+<h6><%= listing.title %></h6>
+
+<p class="mb-1">
+₹ <%= listing.price %> / night
+</p>
+
+</div>
+
+</div>
+
+</a>
+
+</div>
+
+<% }) %>
+
+</div>
+
+<hr>
+
+<% } %>
+
+<!-- LISTINGS -->
+<div class="container">
+  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+
+  <% for (let listing of allListings) { %>
+
+    <div class="col">
+      <a href="/listings/<%= listing._id %>" style="text-decoration:none; color:inherit;">
+        
+        <div class="card listing-card">
+          
+          <img
+src="<%= listing.image?.url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e' %>"
+class="card-img-top"
+style="height:300px; object-fit:cover;"
+alt="listing_image"
+/>
+
+          <div class="card-body">
+            <h5 class="card-title"><b><%= listing.title %></b></h5>
+
+            <p class="card-text">
+              ₹ <%= listing.price ? listing.price.toLocaleString("en-IN") : "0" %> / night
+            </p>
+
+            <span class="badge bg-danger">
+              <%= listing.category %>
+            </span>
+
+          </div>
+
+        </div>
+
+      </a>
+    </div>
+
+  <% } %>
+
+  </div>
+</div>
+
+
+<!-- PAGINATION -->
+<div class="d-flex justify-content-center mt-4 mb-5">
+
+<% if(currentPage > 1){ %>
+<a href="/listings?page=<%= currentPage - 1 %>" class="btn btn-outline-dark me-2">
+Previous
+</a>
+<% } %>
+
+<% if(currentPage < totalPages){ %>
+<a href="/listings?page=<%= currentPage + 1 %>" class="btn btn-outline-dark">
+Next
+</a>
+<% } %>
+
+</div>

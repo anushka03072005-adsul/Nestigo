@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nestigo</title>
+
+<link rel="stylesheet" href="/css/style.css">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/starability@2.4.2/starability-all.min.css">
+
+<link rel="stylesheet" href="/css/rating.css">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+</head>
+
+<body>
+
+<%- include("../includes/navbar") %>
+
+<div class="container mt-3">
+
+<%- include("../includes/flash") %>
+
+<%- body %>
+
+</div>
+
+<%- include("../includes/footer") %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+(() => {
+
+'use strict'
+
+const forms = document.querySelectorAll('.needs-validation')
+
+Array.from(forms).forEach(form => {
+
+form.addEventListener('submit', event => {
+
+if (!form.checkValidity()) {
+
+event.preventDefault()
+
+event.stopPropagation()
+
+}
+
+form.classList.add('was-validated')
+
+}, false)
+
+})
+
+})()
+
+</script>
+
+<script>
+window.addEventListener("load", function () {
+
+  const mapDiv = document.getElementById("map");
+
+  if (!mapDiv) return;
+
+  const coords = JSON.parse(mapDiv.dataset.coords || "null");
+
+  if (!coords) {
+    console.log("No coordinates found for map");
+    return;
+  }
+
+  try {
+    // Ensure parent container has proper styling
+    mapDiv.style.position = "relative";
+    mapDiv.style.zIndex = "1";
+
+    delete L.Icon.Default.prototype._getIconUrl;
+
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
+    });
+
+    // Initialize map with explicit center and zoom
+    const map = L.map('map', {
+      scrollWheelZoom: false, // Prevent accidental zoom on scroll
+      dragging: true,
+      touchZoom: true
+    }).setView([coords[1], coords[0]], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Add marker with popup
+    L.marker([coords[1], coords[0]])
+      .bindPopup(`<b>Your Stay</b><br>${mapDiv.parentElement.parentElement.querySelector('p')?.textContent || 'Property Location'}`)
+      .addTo(map)
+      .openPopup();
+
+    // Force map to recalculate its size after a short delay
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 300);
+
+    // Also invalidate on window resize
+    window.addEventListener('resize', () => {
+      map.invalidateSize();
+    });
+
+  } catch(error) {
+    console.error("Map initialization error:", error);
+  }
+
+});
+</script>
+
+
+
+
+<div id="aiBox" style="
+position:fixed;
+bottom:20px;
+right:20px;
+width:320px;
+background:white;
+border:1px solid #ddd;
+padding:15px;
+display:none;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.2);
+z-index:9999;
+max-height: 500px;
+overflow-y: auto;
+">
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+<h6 style="margin: 0;">🤖 Ask Nestigo AI</h6>
+<button onclick="closeAI()" style="border: none; background: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+</div>
+
+<input 
+  id="aiInput" 
+  class="form-control mb-2" 
+  placeholder="e.g., 'beach', 'mountain', 'castle'"
+  onkeypress="handleEnter(event)"
+>
+
+<button class="btn btn-dark w-100" id="askAiBtn">Search</button>
+
+<div id="aiResults" class="mt-2" style="min-height: 30px;"></div>
+
+</div>
+
+<script>
+
+function openAI(){
+  document.getElementById("aiBox").style.display = "block";
+  document.getElementById("aiInput").focus();
+}
+
+function closeAI(){
+  document.getElementById("aiBox").style.display = "none";
+}
+
+function handleEnter(event){
+  if(event.key === "Enter"){
+    askAI();
+  }
+}
+
+async function askAI(){
+  const query = document.getElementById("aiInput").value.trim();
+  
+  if(!query){
+    document.getElementById("aiResults").innerHTML = '<p class="text-muted" style="font-size: 0.9rem;">Please enter a search term</p>';
+    return;
+  }
+  
+  const resultsDiv = document.getElementById("aiResults");
+  resultsDiv.innerHTML = '<p class="text-muted" style="font-size: 0.9rem;">Searching...</p>';
+  
+  try {
+    const res = await fetch(`/ai/assistant?query=${encodeURIComponent(query)}`);
+    
+    if(!res.ok){
+      resultsDiv.innerHTML = '<p class="text-danger" style="font-size: 0.9rem;">Error fetching results</p>';
+      return;
+    }
+    
+    const data = await res.json();
+    
+    if(!data || data.length === 0){
+      resultsDiv.innerHTML = '<p class="text-muted" style="font-size: 0.9rem;">No listings found for "' + query + '"</p>';
+      return;
+    }
+    
+    let html = '<div style="margin-top: 10px;">';
+    
+    data.forEach(listing => {
+      html += `
+        <div style="padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;" onmouseover="this.style.backgroundColor='#f9f9f9'" onmouseout="this.style.backgroundColor='white'">
+          <a href="/listings/${listing._id}" style="text-decoration: none; color: inherit; display: block;">
+            <strong>${listing.title}</strong>
+            <br>
+            <span style="font-size: 0.85rem; color: #666;">📍 ${listing.location}</span>
+            <br>
+            <span style="font-size: 0.85rem; color: #d97706;">₹${listing.price.toLocaleString("en-IN")}/night</span>
+          </a>
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    resultsDiv.innerHTML = html;
+    
+  } catch(error){
+    console.error("AI Error:", error);
+    resultsDiv.innerHTML = '<p class="text-danger" style="font-size: 0.9rem;">Connection error. Try again.</p>';
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const aiBtn = document.getElementById("aiBtn");
+  const askBtn = document.getElementById("askAiBtn");
+  
+  if(aiBtn){
+    aiBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      openAI();
+    });
+  }
+  
+  if(askBtn){
+    askBtn.addEventListener("click", askAI);
+  }
+});
+
+</script>
+</body>
+</html>

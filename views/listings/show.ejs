@@ -1,0 +1,291 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mt-4">
+
+<!-- TITLE -->
+<h3 class="text-center mb-2"><%= listing.title %></h3>
+
+<p class="text-center text-muted mb-4">
+  Posted by:
+  <%= listing.owner ? listing.owner.username : "Unknown" %>
+</p>
+
+
+<div class="row justify-content-center">
+
+<div class="col-md-6">
+
+<div class="card shadow-sm mb-4">
+
+<img 
+src="<%= listing.image?.url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e' %>"
+class="card-img-top"
+style="height:300px; object-fit:cover;"
+alt="listing_image"
+>
+
+<div class="card-body">
+
+<p><%= listing.description %></p>
+
+<p>
+<strong>
+₹ <%= listing.price ? listing.price.toLocaleString("en-IN") : "0" %>
+</strong>
+</p>
+
+<p><%= listing.location %></p>
+
+<p class="text-muted"><%= listing.country %></p>
+
+
+<!-- WISHLIST -->
+<% if(currUser){ %>
+<form action="/wishlist/<%= listing._id %>" method="POST" class="mt-2">
+<button class="btn btn-outline-danger">
+<i class="fa-solid fa-heart"></i> Add to Wishlist
+</button>
+</form>
+<% } %>
+
+
+<!-- OWNER ACTIONS -->
+<% if(currUser && listing.owner && listing.owner._id.equals(currUser._id)) { %>
+
+<div class="mt-3 d-flex gap-2">
+
+<a href="/listings/<%= listing._id %>/edit" class="btn btn-danger">
+Edit
+</a>
+
+<form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+<button class="btn btn-dark">Delete</button>
+</form>
+
+</div>
+
+<% } %>
+
+</div>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- BOOKING SECTION -->
+
+<div class="row justify-content-center mb-5">
+
+<div class="col-md-5">
+
+<div class="card shadow-sm p-3">
+
+<h4 class="mb-3">Book This Stay</h4>
+
+<form action="/bookings/<%= listing._id %>" method="POST">
+
+<div class="mb-3">
+<label>Check-In</label>
+<input type="text" id="checkIn" name="checkIn" class="form-control" required>
+</div>
+
+<div class="mb-3">
+<label>Check-Out</label>
+<input type="text" id="checkOut" name="checkOut" class="form-control" required>
+</div>
+
+<button class="btn btn-success w-100">
+Book Now
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- REVIEWS -->
+
+<div class="row justify-content-center">
+
+<div class="col-md-8">
+
+<hr>
+
+<h4 class="mb-3">Leave a Review</h4>
+
+<% if(currUser) { %>
+
+<form action="/listings/<%= listing._id %>/reviews" method="POST">
+
+<div class="mb-3">
+
+<label>Rating</label>
+
+<input 
+type="range"
+min="1"
+max="5"
+name="review[rating]"
+class="form-range"
+required
+/>
+
+</div>
+
+<div class="mb-3">
+
+<label>Comment</label>
+
+<textarea
+name="review[comment]"
+rows="4"
+class="form-control"
+required
+></textarea>
+
+</div>
+
+<button class="btn btn-outline-dark">
+Submit
+</button>
+
+</form>
+
+<% } else { %>
+
+<p class="text-muted">Login to leave a review.</p>
+
+<% } %>
+
+<hr>
+
+<h4 class="mb-4"><b>All Reviews</b></h4>
+
+<div class="row">
+
+<% for (let review of listing.reviews) { %>
+
+<div class="col-md-6 mb-3">
+
+<div class="card shadow-sm p-3">
+
+<strong>Author:</strong>
+<%= review.author ? review.author.username : "Anonymous" %>
+
+<br>
+
+<strong>Rating:</strong>
+<%= review.rating %> ⭐
+
+<br>
+
+<strong>Comment:</strong>
+<%= review.comment %>
+
+<% if(currUser && review.author && review.author._id.equals(currUser._id)) { %>
+
+<form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+
+<button class="btn btn-sm btn-danger mt-2">
+Delete
+</button>
+
+</form>
+
+<% } %>
+
+</div>
+
+</div>
+
+<% } %>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- MAP -->
+
+<div class="row justify-content-center mt-5 mb-5">
+
+<div class="col-md-8 col-12">
+
+<h4 class="mb-3">Where you'll be</h4>
+
+<div style="
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  width: 100%;
+  overflow: hidden;
+">
+<div
+id="map"
+data-coords='<%- JSON.stringify(listing.geometry?.coordinates || null) %>'
+style="
+  height: 400px;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 1;
+">
+</div>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- CALENDAR SCRIPT -->
+<div id="bookingData" data-bookings='<%- JSON.stringify(bookings || []) %>'></div>
+<script>
+
+const bookingElement = document.getElementById("bookingData");
+const bookings = JSON.parse(bookingElement.dataset.bookings);
+
+let disabledDates = [];
+
+for(let booking of bookings){
+
+let start = new Date(booking.checkIn);
+let end = new Date(booking.checkOut);
+
+let current = new Date(start);
+
+while(current <= end){
+
+disabledDates.push(new Date(current));
+
+current.setDate(current.getDate()+1);
+
+}
+
+}
+
+flatpickr("#checkIn",{
+dateFormat:"Y-m-d",
+minDate:"today",
+disable:disabledDates
+});
+
+flatpickr("#checkOut",{
+dateFormat:"Y-m-d",
+minDate:"today",
+disable:disabledDates
+});
+
+</script>
