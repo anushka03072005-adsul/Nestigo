@@ -12,7 +12,6 @@ const MongoStore = require("connect-mongo").default;
 const flash = require("connect-flash");
 
 const passport = require("passport");
-const LocalStrategy = require("passport-local");
 
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
@@ -150,10 +149,8 @@ app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(new LocalStrategy({
-    usernameField: 'username',
-    passwordField: 'password'
-}, User.authenticate()));
+// Use passport-local-mongoose's built-in strategy
+passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
