@@ -137,17 +137,30 @@ const sessionOptions = {
     mongoUrl: dbUrl,
     crypto: {
       secret: process.env.SESSION_SECRET || "dev-secret-key"
-    }
+    },
+    touchAfter: 24 * 3600 // lazy session update
   }),
   cookie: {
     httpOnly: true,
-    // CRITICAL: In development (http://localhost), don't require secure HTTPS
-    // In production, require HTTPS
-    secure: process.env.NODE_ENV === "production" && process.env.USE_SECURE_COOKIES === "true",
-    sameSite: "lax", // Changed from "strict" to "lax" for better compatibility
+    // CRITICAL: 
+    // - In development (localhost HTTP): secure=false
+    // - In production (HTTPS): secure=true
+    secure: process.env.NODE_ENV === "production", // Render always uses HTTPS in production
+    sameSite: "lax", // Compatible with both HTTP and HTTPS
     maxAge: 1000 * 60 * 60 * 24 * 7
   }
 };
+
+// Add error handling to MongoStore
+const store = sessionOptions.store;
+store.on("error", (err) => {
+  console.error("❌ [MongoStore] Session store error:", err.message);
+});
+
+store.on("connected", () => {
+  console.log("✅ [MongoStore] Session store connected to MongoDB");
+});
+
 app.use(session(sessionOptions));
 app.use(flash());
 
