@@ -175,18 +175,48 @@ app.use(flash());
 
 // ================= PASSPORT =================
 
+const LocalStrategy = require("passport-local").Strategy;
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Use passport-local-mongoose's built-in strategy
-passport.use(User.createStrategy());
+// Custom Local Strategy using bcryptjs
+passport.use(new LocalStrategy({
+    usernameField: 'username',
+    passwordField: 'password'
+}, async (username, password, done) => {
+    try {
+        console.log("🔐 [PASSPORT] Authenticating user:", username);
+        
+        const user = await User.findOne({ username });
+        
+        if (!user) {
+            console.log("❌ [PASSPORT] User not found:", username);
+            return done(null, false, { message: 'User not found' });
+        }
+        
+        const isPasswordCorrect = await user.comparePassword(password);
+        
+        if (!isPasswordCorrect) {
+            console.log("❌ [PASSPORT] Incorrect password for:", username);
+            return done(null, false, { message: 'Incorrect password' });
+        }
+        
+        console.log("✅ [PASSPORT] Authentication successful for:", username);
+        return done(null, user);
+    } catch (err) {
+        console.error("❌ [PASSPORT] Strategy error:", err);
+        return done(err);
+    }
+}));
 
-// CRITICAL FIX: Use explicit serialization to avoid hanging
+// Serialization - store user ID in session
 passport.serializeUser((user, done) => {
     console.log("📝 SERIALIZE USER:", user._id);
     done(null, user._id);
 });
 
+// Deserialization - retrieve user from DB using ID
 passport.deserializeUser(async (id, done) => {
     try {
         console.log("🔓 DESERIALIZE USER ID:", id);

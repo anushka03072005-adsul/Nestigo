@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const bcrypt = require("bcryptjs");
 
 
 // ================= SIGNUP FORM =================
@@ -14,15 +15,28 @@ module.exports.signup = async (req, res, next) => {
         
         console.log("🔐 SIGNUP ATTEMPT:", { username, email, passwordLength: password?.length });
 
-        const newUser = new User({ username, email });
-        const registeredUser = await User.register(newUser, password);
+        // Check if user already exists
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            console.log("❌ USER ALREADY EXISTS:", username);
+            req.flash("error", "Username already exists!");
+            return res.redirect("/signup");
+        }
+
+        // Create new user with bcryptjs (password will be hashed by pre-save hook)
+        const newUser = new User({ username, email, password });
+        console.log("📝 New user created (not saved yet):", newUser.username);
         
+        // Save to database (pre-save hook will hash the password)
+        const registeredUser = await newUser.save();
         console.log("✅ USER REGISTERED:", { id: registeredUser._id, username: registeredUser.username });
 
+        // Auto-login after signup
         req.login(registeredUser, (err) => {
             if (err) {
-                console.error("❌ LOGIN ERROR AFTER SIGNUP:", err);
-                return next(err);
+                console.error("❌ LOGIN ERROR AFTER SIGNUP:", err.message);
+                req.flash("error", "Login failed after signup");
+                return res.redirect("/signup");
             }
 
             console.log("✅ AUTO-LOGIN AFTER SIGNUP SUCCESSFUL");
@@ -30,8 +44,9 @@ module.exports.signup = async (req, res, next) => {
 
             req.session.save((err) => {
                 if (err) {
-                    console.error("❌ SESSION SAVE ERROR:", err);
-                    return next(err);
+                    console.error("❌ SESSION SAVE ERROR:", err.message);
+                    req.flash("error", "Session error");
+                    return res.redirect("/signup");
                 }
                 console.log("✅ SESSION SAVED");
                 res.redirect("/listings");
