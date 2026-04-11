@@ -41,4 +41,4 @@ Nestigo is a full-stack web application that allows users to explore, create, an
 
 ---
 
-## 📂 Project Structure
+
