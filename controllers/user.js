@@ -11,22 +11,35 @@ module.exports.renderSignupForm = (req, res) => {
 module.exports.signup = async (req, res, next) => {
     try {
         let { username, email, password } = req.body;
+        
+        console.log("🔐 SIGNUP ATTEMPT:", { username, email, passwordLength: password?.length });
 
         const newUser = new User({ username, email });
         const registeredUser = await User.register(newUser, password);
+        
+        console.log("✅ USER REGISTERED:", { id: registeredUser._id, username: registeredUser.username });
 
         req.login(registeredUser, (err) => {
-            if (err) return next(err);
+            if (err) {
+                console.error("❌ LOGIN ERROR AFTER SIGNUP:", err);
+                return next(err);
+            }
 
+            console.log("✅ AUTO-LOGIN AFTER SIGNUP SUCCESSFUL");
             req.flash("success", "Welcome to Nestigo!");
 
             req.session.save((err) => {
-                if (err) return next(err);
+                if (err) {
+                    console.error("❌ SESSION SAVE ERROR:", err);
+                    return next(err);
+                }
+                console.log("✅ SESSION SAVED");
                 res.redirect("/listings");
             });
         });
 
     } catch (e) {
+        console.error("❌ SIGNUP ERROR:", e.message);
         req.flash("error", e.message);
         res.redirect("/signup");
     }
@@ -48,13 +61,27 @@ module.exports.renderLoginForm = (req, res) => {
 
 
 // ================= LOGIN =================
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
+    console.log("🔐 LOGIN SUCCESS:", { 
+        userId: req.user?._id, 
+        username: req.user?.username,
+        isAuthenticated: req.isAuthenticated() 
+    });
 
     req.flash("success", `Welcome back ${req.user.username}!`);
 
     const redirectUrl = res.locals.redirectUrl || "/listings";
+    console.log("📍 REDIRECTING TO:", redirectUrl);
 
-    res.redirect(redirectUrl);
+    // CRITICAL: Save session before redirect (same as signup)
+    req.session.save((err) => {
+        if (err) {
+            console.error("❌ SESSION SAVE ERROR:", err);
+            return next(err);
+        }
+        console.log("✅ SESSION SAVED AFTER LOGIN");
+        res.redirect(redirectUrl);
+    });
 };
 
 

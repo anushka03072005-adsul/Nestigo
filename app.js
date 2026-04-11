@@ -44,6 +44,12 @@ app.engine("ejs", ejsMate);
 
 // ================= BASIC MIDDLEWARE =================
 
+// CRITICAL: Log every single request to diagnose routing issues
+app.use((req, res, next) => {
+  console.log(`📡 [${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
+
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 
@@ -58,9 +64,9 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://unpkg.com"],
         imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://images.unsplash.com", "https://*.tile.openstreetmap.org"],
-        connectSrc: ["'self'", "https://api.opencagedata.com", "https://*.tile.openstreetmap.org"],
+        connectSrc: ["'self'", "https://api.opencagedata.com", "https://*.tile.openstreetmap.org", "https://cdn.jsdelivr.net", "https://unpkg.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"]
       }
     }
@@ -135,8 +141,10 @@ const sessionOptions = {
   }),
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    // CRITICAL: In development (http://localhost), don't require secure HTTPS
+    // In production, require HTTPS
+    secure: process.env.NODE_ENV === "production" && process.env.USE_SECURE_COOKIES === "true",
+    sameSite: "lax", // Changed from "strict" to "lax" for better compatibility
     maxAge: 1000 * 60 * 60 * 24 * 7
   }
 };
@@ -151,8 +159,39 @@ app.use(passport.session());
 
 // Use passport-local-mongoose's built-in strategy
 passport.use(User.createStrategy());
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+
+// CRITICAL FIX: Use explicit serialization to avoid hanging
+passport.serializeUser((user, done) => {
+    console.log("📝 SERIALIZE USER:", user._id);
+    done(null, user._id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        console.log("🔓 DESERIALIZE USER ID:", id);
+        const user = await User.findById(id);
+        if (!user) {
+            console.log("⚠️  USER NOT FOUND:", id);
+            return done(null, false);
+        }
+        console.log("✅ DESERIALIZED USER:", user.username);
+        done(null, user);
+    } catch (err) {
+        console.error("❌ DESERIALIZE ERROR:", err);
+        done(err);
+    }
+});
+
+// Debug middleware
+app.use((req, res, next) => {
+    console.log(`🔍 [SESSION] ID: ${req.sessionID}, User: ${req.user?.username || 'NONE'}, Authenticated: ${req.isAuthenticated()}`);
+    if (req.user) {
+        console.log(`✅ [AUTH] Authenticated: ${req.user.username}`);
+    } else {
+        console.log(`❌ [AUTH] NOT AUTHENTICATED - Session data:`, req.session.passport);
+    }
+    next();
+});
 
 
 // ================= GLOBAL VARIABLES =================
