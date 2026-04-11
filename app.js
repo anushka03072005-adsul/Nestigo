@@ -108,6 +108,13 @@ mongoose
   })
   .then(() => {
     console.log("✅ Connected to MongoDB successfully!");
+    
+    // CRITICAL: Only start the server AFTER MongoDB is connected
+    // This ensures MongoStore is ready to save sessions
+    const PORT = process.env.PORT || 8080;
+    app.listen(PORT, () => {
+      console.log(`✅ Server is running on port ${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("❌ MongoDB Connection Failed!");
@@ -115,6 +122,7 @@ mongoose
     if (err.message.includes("authentication") || err.message.includes("ENOTFOUND")) {
       console.error("💡 Tip: Check your connection string and IP whitelist in MongoDB Atlas");
     }
+    process.exit(1); // Exit if MongoDB connection fails
   });
 
 // Monitor connection events
@@ -244,12 +252,4 @@ app.use((err, req, res, next) => {
       res.status(statusCode).send(`<h1>Error ${statusCode}</h1><p>${err.message}</p>`);
     }
   });
-});
-
-
-// ================= SERVER =================
-
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
 });
